@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const contatoSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  nome: { type: String, required: true },
   sobrenome: { type: String, required: false, default: '' },
   email: { type: String, required: false, default: '' },
   telefone: { type: String, required: false, default: '' },
@@ -31,26 +31,32 @@ class Contato {
       this.errors.push('E-mail inválido');
     };
 
-    if(!this.body.name) {this.errors.push('Nome é um campo obrigatório')};
+    if(!this.body.nome) {this.errors.push('Nome é um campo obrigatório')};
     if(!this.body.email && !this.body.telefone){
       this.errors.push('Pelo menos um contato precisa ser enviado: e-mail ou telefone');
     };
   };
   
   cleanUp(){
-    for(let key in this.body){
-      if ( typeof this.body[key] !== 'string'){
+    for (const key in this.body) {
+      if (this.body[key] === undefined || this.body[key] === null) {
         this.body[key] = '';
-      };
-    };
-  
+      }
+
+      if (typeof this.body[key] !== 'string') {
+        this.body[key] = String(this.body[key]).trim();
+      } else {
+        this.body[key] = this.body[key].trim();
+      }
+    }
+
     this.body = {
-      name: this.body.name,
-      sobrenome: this.body.sobrenome,
-      email: this.body.email,
-      telefone: this.body.telefone,
+      nome: this.body.nome || '',
+      sobrenome: this.body.sobrenome || '',
+      email: this.body.email || '',
+      telefone: this.body.telefone || '',
     };
-  };
+  }
 
   async edit(id){
     if(typeof id !== 'string') return;
@@ -69,7 +75,7 @@ class Contato {
 
   static async buscaContatos(){
     const contatos = await contatoModel.find()
-      .sort({ criadoEm: -1 });
+      .sort({ data: -1 });
     return contatos;
   };
 
